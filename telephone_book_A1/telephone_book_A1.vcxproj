@@ -123,6 +123,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\text_analysis__A2\text_analysis\inputing.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\text_analysis__A2\text_analysis\inputing.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

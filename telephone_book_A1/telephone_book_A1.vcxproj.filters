@@ -18,9 +18,18 @@
     <ClInclude Include="..\..\text_analysis__A2\text_analysis\inputing.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="telephone_book.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\text_analysis__A2\text_analysis\inputing.c">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="main.c">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="telephone_book.c">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>

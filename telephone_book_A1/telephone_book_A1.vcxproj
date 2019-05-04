@@ -123,11 +123,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\text_analysis__A2\text_analysis\inputing.h" />
+    <ClInclude Include="inputing.h" />
     <ClInclude Include="telephone_book.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\text_analysis__A2\text_analysis\inputing.c" />
+    <ClCompile Include="inputing.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="telephone_book.c" />
   </ItemGroup>

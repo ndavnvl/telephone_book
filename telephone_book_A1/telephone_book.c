@@ -8,7 +8,9 @@ static size_t str_length(char *str_ptr) {
 		length++;
 	}
 
-	return length++;
+	length++;
+
+	return length;
 }
 
 
@@ -40,12 +42,12 @@ static list divide_list(list name_of_list) {
 	}
 
 	size_t num_of_people = num_of_people_in_a_list(name_of_list);
+	person* first_person_in_a_half_of_list = name_of_list->next_person;
 
-	for (size_t i = 0; i < num_of_people - 1; i++) {
+	for (size_t i = 0; i < num_of_people / 2 - 1; i++) {
+		first_person_in_a_half_of_list = first_person_in_a_half_of_list->next_person;
 		name_of_list = name_of_list->next_person;
 	}
-
-	person *first_person_in_a_half_of_list = name_of_list->next_person;
 
 	name_of_list->next_person = NULL;	
 	return first_person_in_a_half_of_list;
@@ -65,6 +67,11 @@ static list merge_lists(list first_list,
 
 	if (first_list == NULL) {
 		return second_list;
+	}
+	else {
+		if (second_list == NULL) {
+			return first_list;
+		}
 	}
 	
 	list res_list;
@@ -117,7 +124,7 @@ static int comparison_of_strings(char *first_string, char *second_string) {
 
 	size_t i = 0;
 
-	while (first_string[i] == second_string[i] && first_string[i] == '\0') {
+	while (first_string[i] == second_string[i] && first_string[i] != '\0') {
 		i++;
 	}
 
@@ -125,7 +132,9 @@ static int comparison_of_strings(char *first_string, char *second_string) {
 		return 1;
 	}
 	else {
-		return -1;
+		if(first_string[i] < second_string[i]) {
+			return -1;
+		}
 	}
 
 	return 0;
@@ -185,7 +194,8 @@ static list sorting_ (list name_of_list,
 	int sort_direction,
 	int comparison_func(person, person)) {
 
-	if(name_of_list == NULL) {
+	if(name_of_list == NULL ||
+		name_of_list->next_person == NULL) {
 		return name_of_list;
 	}
 	else {
@@ -213,8 +223,7 @@ static list sorting_ (list name_of_list,
 
 static void copy_strings(char *input_string, char **output_string) {
 	if (input_string == NULL) {
-		*output_string = (char *)malloc(sizeof(char));
-		**output_string = '\0';
+		*output_string = NULL;
 		return;
 	}
 
@@ -222,8 +231,26 @@ static void copy_strings(char *input_string, char **output_string) {
 
 	*output_string = (char *)malloc(input_str_length * sizeof(char));
 
-	for (size_t i = 0;((*output_string)[i] = input_string[i]) != '\0'; i++);
+	for (size_t i = 0; ((*output_string)[i] = input_string[i]) != '\0'; i++);
 	return;
+}
+
+
+
+
+
+
+
+
+static person **find_(list *name_of_list_ptr, char* surname, char* name) {
+	while (*name_of_list_ptr != NULL &&
+		(comparison_of_strings((*name_of_list_ptr)->surname, surname) ||
+			comparison_of_strings((*name_of_list_ptr)->name, name))) {
+
+		name_of_list_ptr = &((*name_of_list_ptr)->next_person);
+	}
+
+	return name_of_list_ptr;
 }
 
 
@@ -239,7 +266,7 @@ int add_person(list *name_of_list_ptr,
 	char *number,
 	char *birthday) {
 	
-	if (find_(*name_of_list_ptr, surname, name) != NULL ||
+	if (*(find_(name_of_list_ptr, surname, name)) != NULL ||
 		surname == NULL || *surname == '\0' ||
 		name == NULL || *name == '\0' ||
 		number == NULL || *number == '\0' ||
@@ -254,16 +281,20 @@ int add_person(list *name_of_list_ptr,
 	copy_strings(name, &(new_person->name));
 	copy_strings(number, &(new_person->number));
 	copy_strings(birthday, &(new_person->birthday));
+	new_person->next_person = NULL;
 
 	if (*name_of_list_ptr == NULL) {
 		*name_of_list_ptr = new_person;
+		return;
 	}
 
-	while ((*name_of_list_ptr)->next_person != NULL) {
-		*name_of_list_ptr = (*name_of_list_ptr)->next_person;
+	person *tmp_person = *name_of_list_ptr;
+
+	while (tmp_person->next_person != NULL) {
+		tmp_person = tmp_person->next_person;
 	}
 
-	(*name_of_list_ptr)->next_person = new_person;
+	tmp_person->next_person = new_person;
 	return 1;
 }
 
@@ -274,21 +305,18 @@ int add_person(list *name_of_list_ptr,
 
 
 
-static person **find_(list name_of_list, char *surname, char *name) {
-	if (name_of_list == NULL) {
-		return NULL;
+person find(list name_of_list, char *surname, char *name) {
+	person *searching_person_ptr = *(find_(&name_of_list, surname, name));
+
+	if(searching_person_ptr == NULL) {
+
+		person err_person;
+
+		err_person.surname = NULL;
+		return err_person;
 	}
 
-	person **tmp_person = &(name_of_list->next_person);
-
-	while (*tmp_person != NULL &&
-		(!comparison_of_strings((*tmp_person)->surname, surname) ||
-		!comparison_of_strings((*tmp_person)->name, name))) {
-
-		tmp_person = &((*tmp_person)->next_person);
-	}
-
-	return tmp_person;
+	return *searching_person_ptr;
 }
 
 
@@ -298,29 +326,18 @@ static person **find_(list name_of_list, char *surname, char *name) {
 
 
 
-person find(list name_of_list, char* surname, char* name) {
-	return **find_(name_of_list, surname, name);
-}
-
-
-
-
-
-
-
-
-void delete_person(list name_of_list, char *surname, char *name) {
+void delete_person(list *name_of_list, char *surname, char *name) {
 	person **deleting_person_ptr_ptr = find_(name_of_list, surname, name);
-	
+		
 	free((*deleting_person_ptr_ptr)->surname);
 	free((*deleting_person_ptr_ptr)->name);
 	free((*deleting_person_ptr_ptr)->number);
 	free((*deleting_person_ptr_ptr)->birthday);
+	
+	person *tmp_person = *deleting_person_ptr_ptr;
 
-	person *tmp_person_ptr = *deleting_person_ptr_ptr;
-
-	*deleting_person_ptr_ptr = ((*deleting_person_ptr_ptr)->next_person);
-	free(tmp_person_ptr);
+	*deleting_person_ptr_ptr = (*deleting_person_ptr_ptr)->next_person;
+	free(tmp_person);
 	return;
 }
 
@@ -331,8 +348,8 @@ void delete_person(list name_of_list, char *surname, char *name) {
 
 
 
-void sort_list (list list_name, int component, int direction) {
-	if (list_name == NULL ||
+void sort_list (list *list_name, int component, int direction) {
+	if (*list_name == NULL ||
 		component > 3 ||
 		component < 0 ||
 		direction > 1 ||
@@ -342,24 +359,25 @@ void sort_list (list list_name, int component, int direction) {
 		return;
 	}
 
-	list res_list;
+	list res_list = NULL;
 
 	switch (component) {
 	case 0:
-		res_list = sorting_(list_name, direction, comparison_by_surname);
+		res_list = sorting_(*list_name, direction, comparison_by_surname);
 		break;
 	case 1:
-		res_list = sorting_(list_name, direction, comparison_by_name);
+		res_list = sorting_(*list_name, direction, comparison_by_name);
 		break;
 	case 2:
-		res_list = sorting_(list_name, direction, comparison_by_number);
+		res_list = sorting_(*list_name, direction, comparison_by_number);
 		break;
 	case 3:
-		res_list = sorting_(list_name, direction, comparison_by_birthday);
+		res_list = sorting_(*list_name, direction, comparison_by_birthday);
 		break;
 	}
 
-	return res_list;
+	*list_name = res_list;
+	return;
 }
 
 
@@ -369,6 +387,11 @@ void sort_list (list list_name, int component, int direction) {
 
 
 void print_person_to_stream(FILE *stream, person person_name) {
+	if(person_name.surname == NULL) {
+		fprintf_s(stream, "\nThere is no a such person.\n");
+		return;
+	}
+
 	fprintf_s(stream,
 		"\n\nSurname: %s\nName: %s\nNumber: %s\nBirthday: %s\n",
 		person_name.surname,
@@ -426,16 +449,16 @@ void print_list(list name_of_list){
 
 
 
-void delete_list (list name_of_list) {
-	while (name_of_list != NULL) {
-		free(name_of_list->surname);
-		free(name_of_list->name);
-		free(name_of_list->number);
-		free(name_of_list->birthday);
+void delete_list (list *name_of_list) {
+	while (*name_of_list != NULL) {
+		free((*name_of_list)->surname);
+		free((*name_of_list)->name);
+		free((*name_of_list)->number);
+		free((*name_of_list)->birthday);
 		
-		person *tmp_person_ptr = name_of_list;
+		person *tmp_person_ptr = *name_of_list;
 
-		name_of_list = name_of_list->next_person;
+		*name_of_list = (*name_of_list)->next_person;
 		free(tmp_person_ptr);
 	}
 
@@ -450,11 +473,11 @@ void delete_list (list name_of_list) {
 
 
 list open_list(FILE* file_ptr) {
-	list res_list;
-	char *surname;
-	char *name;
-	char *number;
-	char *birthday;
+	list res_list = NULL;
+	char surname[256];
+	char name[256];
+	char number[256];
+	char birthday[256];
 
 	while(!feof(file_ptr)) {
 		fscanf_s(file_ptr,
